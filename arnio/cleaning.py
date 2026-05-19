@@ -468,7 +468,7 @@ def strip_whitespace(
 def parse_bool_strings(
     frame: ArFrame,
     *,
-    subset: list[str] | None = None,
+    subset: Sequence[str] | None = None,
     true_values: set[str] | None = None,
     false_values: set[str] | None = None,
 ) -> ArFrame:
@@ -478,7 +478,7 @@ def parse_bool_strings(
     ----------
     frame : ArFrame
         Input Arnio frame.
-    subset : list[str], optional
+    subset : sequence of str, optional
         Columns to apply conversion on. If None, applies to all object/string columns.
     true_values : set[str], optional
         String values treated as True.
@@ -519,18 +519,15 @@ def parse_bool_strings(
         )
 
     if subset is not None:
-        if not isinstance(subset, list):
-            raise TypeError("subset must be a list of column names or None")
+        columns = _validate_column_sequence(subset, argument_name="subset")
 
-        if len(subset) == 0:
+        if len(columns) == 0:
             raise ValueError("subset cannot be empty")
 
-        missing = [col for col in subset if col not in df.columns]
+        missing = [col for col in columns if col not in df.columns]
 
         if missing:
             raise ValueError(f"Columns not found in frame: {missing}")
-
-        columns = subset
     else:
         columns = df.select_dtypes(include=["object", "string"]).columns.tolist()
 
