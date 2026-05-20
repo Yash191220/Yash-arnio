@@ -377,6 +377,14 @@ clean = ar.pipeline(frame, [
 ])
 ```
 
+Need to inspect the built-in kwargs a step accepts before assembling a pipeline?
+
+```python
+signatures = ar.get_builtin_step_signatures()
+print(list(signatures["drop_nulls"].parameters))  # ["subset"]
+print(list(signatures["filter_rows"].parameters))  # ["column", "op", "value"]
+```
+
 Custom steps run through a pandas↔ArFrame conversion bridge. Prototype in Python, then optionally migrate hot paths to C++ for full speed.
 </details>
 
