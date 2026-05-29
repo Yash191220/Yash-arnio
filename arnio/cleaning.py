@@ -2100,7 +2100,7 @@ def clean_column_names(
         if original != updated
     }
     if not mapping:
-        return frame
+        return copy.deepcopy(frame)
 
     result = _rename_columns(frame._frame, mapping)
     return ArFrame(result)
