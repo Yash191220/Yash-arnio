@@ -58,25 +58,31 @@ def main():
         ],
     )
 
+    # Convert to pandas temporarily because pandas supports robust coercion of
+    # non-numeric strings (like "bad") to NaN via pd.to_numeric.
     clean_df = ar.to_pandas(cleaned)
-
-    # coerce non-numeric strings to NaN and drop them
     clean_df["price"] = pd.to_numeric(clean_df["price"], errors="coerce")
     clean_df["quantity"] = pd.to_numeric(clean_df["quantity"], errors="coerce")
     clean_df = clean_df.dropna()
+
+    # Re-wrap as an ArFrame to demonstrate native register_duckdb interop
+    cleaned_frame = ar.from_pandas(clean_df)
 
     print("Cleaned Data:")
     print(clean_df)
     print("-" * 40)
 
     # --------------------------------------------------
-    # Step 3: Query with DuckDB
+    # Step 3: Query with DuckDB using public helper
     # --------------------------------------------------
-    result = duckdb.query(
+    conn = duckdb.connect()
+    ar.register_duckdb(cleaned_frame, conn, "clean_products")
+
+    result = conn.execute(
         "SELECT product, price, quantity, price * quantity AS total_value "
-        "FROM clean_df "
+        "FROM clean_products "
         "ORDER BY total_value DESC"
-    ).df()
+    ).fetchdf()
 
     print("DuckDB Query Result (sorted by total value):")
     print(result)
